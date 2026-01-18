@@ -43,7 +43,7 @@ export default async function handler(request) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: body.model || 'claude-sonnet-4-20250514',
+        model: body.model || 'claude-3-5-sonnet-20241022',
         max_tokens: body.max_tokens || 4000,
         system: body.system || '',
         messages: body.messages,
