@@ -50,12 +50,12 @@ export default async function handler(request) {
       }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+   if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Anthropic error:', errorText);
       return new Response(
         JSON.stringify({ 
-          error: `Anthropic API error: ${response.status}`,
-          details: errorData 
+          error: `Anthropic API error: ${response.status} - ${errorText}`
         }),
         { status: response.status, headers: { 'Content-Type': 'application/json' } }
       );
