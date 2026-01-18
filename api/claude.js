@@ -1,36 +1,20 @@
-// Vercel Serverless Function - Claude API Proxy
-// This keeps your API key secure on the server side
+export const config = {
+  maxDuration: 300,
+};
 
-export default async function handler(request) {
-  // Only allow POST requests
-  if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Get API key from environment
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return new Response(
-      JSON.stringify({ error: 'API key not configured. Set ANTHROPIC_API_KEY in environment.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return res.status(500).json({ error: 'API key not configured' });
   }
 
   try {
-    const body = await request.json();
-    
-    // Validate required fields
-    if (!body.messages || !Array.isArray(body.messages)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid request: messages array required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    const body = req.body;
 
-    // Call Anthropic API
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -39,7 +23,7 @@ export default async function handler(request) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-           model: body.model || 'claude-sonnet-4-5-20250929',
+        model: body.model || 'claude-sonnet-4-5-20250929',
         max_tokens: body.max_tokens || 4000,
         system: body.system || '',
         messages: body.messages,
@@ -47,31 +31,15 @@ export default async function handler(request) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return new Response(
-        JSON.stringify({ 
-          error: `Anthropic API error: ${response.status}`,
-          details: errorData 
-        }),
-        { status: response.status, headers: { 'Content-Type': 'application/json' } }
-      );
+      const errorText = await response.text();
+      return res.status(response.status).json({ error: errorText });
     }
 
     const data = await response.json();
-    
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
-      },
-    });
+    return res.status(200).json(data);
 
   } catch (error) {
     console.error('API Error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error', message: error.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return res.status(500).json({ error: error.message });
   }
 }
