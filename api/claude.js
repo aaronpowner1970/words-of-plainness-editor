@@ -1,10 +1,6 @@
 // Vercel Serverless Function - Claude API Proxy
 // This keeps your API key secure on the server side
 
-export const config = {
-  runtime: 'edge',
-};
-
 export default async function handler(request) {
   // Only allow POST requests
   if (request.method !== 'POST') {
