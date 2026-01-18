@@ -426,8 +426,8 @@ Return ONLY the JSON array, nothing else.`;
       // Clean the response and parse JSON with multiple fallback strategies
       let cleanedResponse = response.trim();
       
-      // Remove markdown code blocks
-      cleanedResponse = cleanedResponse.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+      // Remove markdown code blocks more aggressively
+      cleanedResponse = cleanedResponse.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/g, '').replace(/```/g, '').trim();
       
       // Try to extract just the JSON array if there's extra text
       const arrayMatch = cleanedResponse.match(/\[[\s\S]*\]/);
