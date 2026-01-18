@@ -134,7 +134,7 @@ const prepareDocument = async (text, onProgress) => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 8000,
       system: PREPARATION_SYSTEM_PROMPT,
       messages: [{ 
@@ -274,7 +274,7 @@ export default function Editor() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-5-sonnet-20240620',
         max_tokens: 4000,
         system: systemPrompt,
         messages: messages
