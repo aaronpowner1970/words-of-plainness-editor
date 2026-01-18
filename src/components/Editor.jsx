@@ -374,7 +374,7 @@ Your task is to analyze the provided text and return editorial suggestions.
 
 ${modeDescriptions}
 
-Return approximately ${suggestionLimit} suggestions as a JSON array. Each suggestion must have this structure:
+Return approximately ${suggestionLimit === 'exhaustive' ? '25-40' : suggestionLimit} suggestions as a JSON array. Each suggestion must have this structure:
 {
   "original": "exact text from document",
   "suggestion": "proposed replacement",
@@ -1024,12 +1024,34 @@ ${htmlContent}
               {mode.name}
             </button>
           ))}
+
+          {/* Suggestion Limit Selector */}
+            <select
+              value={suggestionLimit}
+              onChange={(e) => setSuggestionLimit(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid rgba(44,36,22,0.15)',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontFamily: '"Inter", system-ui, sans-serif',
+                background: '#fff',
+                color: '#2c2416',
+                cursor: 'pointer',
+                marginLeft: 'auto'
+              }}
+            >
+              <option value="5">5 suggestions</option>
+              <option value="10">10 suggestions</option>
+              <option value="15">15 suggestions</option>
+              <option value="25">25 suggestions</option>
+              <option value="exhaustive">Exhaustive analysis</option>
+            </select>
           
           <button
             onClick={analyzeContent}
             disabled={isAnalyzing || activeModes.length === 0}
             style={{
-              marginLeft: 'auto',
               padding: '8px 20px',
               background: isAnalyzing 
                 ? '#94a3b8' 
