@@ -454,7 +454,7 @@ Return ONLY the JSON array, nothing else.`;
           parsedSuggestions = JSON.parse(cleanedResponse);
         } catch (finalError) {
           console.error('Raw response:', response.substring(0, 500));
-          throw new Error('The AI response could not be parsed. Try analyzing a shorter section of text, or use fewer editorial modes.');
+          const preview = response.substring(0, 150).replace(/\n/g, ' '); throw new Error(`Could not parse AI response. Response started with: "${preview}..."`);
         }
       }
       
