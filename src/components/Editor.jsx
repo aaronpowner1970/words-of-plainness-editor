@@ -463,7 +463,23 @@ Example response format:
                        suggestion.suggestion + 
                        content.substring(suggestion.end);
     setContent(newContent);
-    setSuggestions(prev => prev.filter(s => s.id !== suggestion.id));
+    
+    // Remove accepted suggestion and recalculate positions for remaining
+    const remainingSuggestions = suggestions
+      .filter(s => s.id !== suggestion.id)
+      .map(s => {
+        // Find the original text in the NEW content
+        const newStart = newContent.indexOf(s.original);
+        if (newStart === -1) return null; // Text no longer exists
+        return {
+          ...s,
+          start: newStart,
+          end: newStart + s.original.length
+        };
+      })
+      .filter(s => s !== null);
+    
+    setSuggestions(remainingSuggestions);
     
     setChatHistory(prev => [...prev, {
       role: 'assistant',
