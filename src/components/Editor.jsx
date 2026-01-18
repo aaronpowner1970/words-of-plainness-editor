@@ -423,24 +423,20 @@ Return ONLY the JSON array, nothing else.`;
         systemPrompt
       );
 
-      // Clean the response and parse JSON with multiple fallback strategies
-      let cleanedResponse = response.trim();
-      
-      // Remove markdown code blocks more aggressively
-      cleanedResponse = cleanedResponse.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/g, '').replace(/```/g, '').trim();
-      
-      // Try to extract just the JSON array if there's extra text
-      const arrayMatch = cleanedResponse.match(/\[[\s\S]*\]/);
-      if (arrayMatch) {
-        cleanedResponse = arrayMatch[0];
-      }
-      
-      // Fix common JSON issues: unescaped newlines within strings
-      cleanedResponse = cleanedResponse.replace(/:\s*"([^"]*)\n([^"]*)"/g, (match, p1, p2) => {
-        return `: "${p1}\\n${p2}"`;
-      });
-      
-      let parsedSuggestions;
+     // Extract JSON array directly - find first [ and last ]
+   const startBracket = response.indexOf('[');
+   const endBracket = response.lastIndexOf(']');
+   
+   if (startBracket === -1 || endBracket === -1) {
+     throw new Error('No JSON array found in response');
+   }
+   
+   let cleanedResponse = response.substring(startBracket, endBracket + 1);
+   
+   // Fix common JSON issues: remove control characters
+   cleanedResponse = cleanedResponse.replace(/[\x00-\x1F\x7F]/g, ' ');
+   
+   let parsedSuggestions;
       try {
         parsedSuggestions = JSON.parse(cleanedResponse);
       } catch (parseError) {
