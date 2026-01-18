@@ -241,6 +241,7 @@ export default function Editor() {
   const [isPreparing, setIsPreparing] = useState(false);
   const [showPrepareConfirm, setShowPrepareConfirm] = useState(false);
   const [suggestionLimit, setSuggestionLimit] = useState('8');
+  const [expandedSuggestion, setExpandedSuggestion] = useState(null);
   
   const editorRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -1326,10 +1327,17 @@ ${htmlContent}
                     {suggestion.original.substring(0, 80)}{suggestion.original.length > 80 ? '...' : ''}
                   </span>
                 </div>
-                <div style={{ fontSize: '13px', marginBottom: '8px' }}>
+              <div 
+                  onClick={() => setExpandedSuggestion(suggestion)}
+                  style={{ fontSize: '13px', marginBottom: '8px', cursor: 'pointer' }}
+                  title="Click to view full suggestion"
+                >
                   <span style={{ color: '#1e3a5f', fontWeight: '500', background: 'rgba(5,150,105,0.08)', padding: '1px 4px', borderRadius: '3px' }}>
                     {suggestion.suggestion.substring(0, 80)}{suggestion.suggestion.length > 80 ? '...' : ''}
                   </span>
+                  {suggestion.suggestion.length > 80 && (
+                    <span style={{ fontSize: '11px', color: '#059669', marginLeft: '6px' }}>⤢ expand</span>
+                  )}
                 </div>
                 
                 <p style={{ fontSize: '11px', color: '#7a6f5f', margin: '0 0 12px 0', fontFamily: '"Inter", system-ui, sans-serif', lineHeight: '1.5' }}>
@@ -1453,6 +1461,152 @@ ${htmlContent}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
+      
+      {/* Expanded Suggestion Modal */}
+      {expandedSuggestion && (
+        <div 
+          onClick={() => setExpandedSuggestion(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              borderRadius: '12px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+            }}
+          >
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid rgba(44,36,22,0.1)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: getModeColor(expandedSuggestion.mode) }} />
+                <span style={{ fontSize: '14px', fontWeight: '600', color: getModeColor(expandedSuggestion.mode), fontFamily: '"Inter", system-ui, sans-serif' }}>
+                  {EDITORIAL_MODES.find(m => m.id === expandedSuggestion.mode)?.name}
+                </span>
+              </div>
+              <button
+                onClick={() => setExpandedSuggestion(null)}
+                style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#7a6f5f', padding: '0 8px' }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ padding: '24px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '11px', fontWeight: '600', color: '#b91c1c', fontFamily: '"Inter", system-ui, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  Original Text
+                </label>
+                <div style={{ 
+                  padding: '16px', 
+                  background: 'rgba(220,38,38,0.05)', 
+                  borderRadius: '8px', 
+                  border: '1px solid rgba(220,38,38,0.15)',
+                  fontSize: '15px',
+                  lineHeight: '1.7',
+                  color: '#7a6f5f',
+                  fontFamily: '"Source Serif 4", Georgia, serif'
+                }}>
+                  {expandedSuggestion.original}
+                </div>
+              </div>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ fontSize: '11px', fontWeight: '600', color: '#059669', fontFamily: '"Inter", system-ui, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  Suggested Replacement
+                </label>
+                <div style={{ 
+                  padding: '16px', 
+                  background: 'rgba(5,150,105,0.05)', 
+                  borderRadius: '8px', 
+                  border: '1px solid rgba(5,150,105,0.2)',
+                  fontSize: '15px',
+                  lineHeight: '1.7',
+                  color: '#1e3a5f',
+                  fontWeight: '500',
+                  fontFamily: '"Source Serif 4", Georgia, serif'
+                }}>
+                  {expandedSuggestion.suggestion}
+                </div>
+              </div>
+              
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ fontSize: '11px', fontWeight: '600', color: '#7a6f5f', fontFamily: '"Inter", system-ui, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  Reason
+                </label>
+                <div style={{ 
+                  padding: '16px', 
+                  background: 'rgba(250,249,247,0.8)', 
+                  borderRadius: '8px', 
+                  border: '1px solid rgba(44,36,22,0.1)',
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  color: '#5a5044',
+                  fontFamily: '"Inter", system-ui, sans-serif'
+                }}>
+                  {expandedSuggestion.reason}
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => { acceptSuggestion(expandedSuggestion); setExpandedSuggestion(null); }}
+                  style={{ 
+                    flex: 1, 
+                    padding: '12px 20px', 
+                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', 
+                    border: 'none', 
+                    borderRadius: '8px', 
+                    fontSize: '14px', 
+                    fontFamily: '"Inter", system-ui, sans-serif', 
+                    fontWeight: '600', 
+                    cursor: 'pointer', 
+                    color: '#fff',
+                    boxShadow: '0 2px 8px rgba(5,150,105,0.3)'
+                  }}
+                >
+                  Accept Change
+                </button>
+                <button
+                  onClick={() => { dismissSuggestion(expandedSuggestion); setExpandedSuggestion(null); }}
+                  style={{ 
+                    flex: 1, 
+                    padding: '12px 20px', 
+                    background: 'transparent', 
+                    border: '1px solid rgba(44,36,22,0.2)', 
+                    borderRadius: '8px', 
+                    fontSize: '14px', 
+                    fontFamily: '"Inter", system-ui, sans-serif', 
+                    fontWeight: '500', 
+                    cursor: 'pointer', 
+                    color: '#5a5044' 
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
