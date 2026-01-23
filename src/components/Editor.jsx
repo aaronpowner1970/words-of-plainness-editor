@@ -383,31 +383,36 @@ Return approximately ${suggestionLimit === 'exhaustive' ? '25-40' : suggestionLi
   "mode": "clarity|grammar|tone|scripture|terminology"
 }
 
-IMPORTANT RULES:
-1. Return ONLY a valid JSON array - no other text, no markdown, no code blocks
-2. The "original" field must match the document EXACTLY
-3. Keep all string values on a single line (no line breaks inside strings)
-4. Escape any quotes inside strings with backslash
+CRITICAL FORMATTING RULES:
+1. Return ONLY raw JSON - NO markdown, NO code fences, NO backticks
+2. Start your response directly with [ and end with ]
+3. Do not wrap in \`\`\`json or any other formatting
 
 Example response format:
 [{"original":"text here","suggestion":"new text","reason":"why","mode":"clarity"}]`;
 
     try {
       const response = await callClaudeAPI(
-        [{ role: 'user', content: `Analyze this text and return suggestions as a JSON array:\n\n${content}` }],
+        [{ role: 'user', content: `Analyze this text and return suggestions as a JSON array. Remember: raw JSON only, no markdown formatting, start directly with [:\n\n${content}` }],
         systemPrompt
       );
 
+      // Strip any markdown fences first
+      let cleanResponse = response.trim();
+      cleanResponse = cleanResponse.replace(/^```json\s*/i, '');
+      cleanResponse = cleanResponse.replace(/^```\s*/i, '');
+      cleanResponse = cleanResponse.replace(/\s*```$/g, '');
+      
       // Extract JSON array - find first [ and last ]
-      const startBracket = response.indexOf('[');
-      const endBracket = response.lastIndexOf(']');
+      const startBracket = cleanResponse.indexOf('[');
+      const endBracket = cleanResponse.lastIndexOf(']');
       
       if (startBracket === -1 || endBracket === -1) {
-        const preview = response.substring(0, 300).replace(/\n/g, ' ');
+        const preview = cleanResponse.substring(0, 300).replace(/\n/g, ' ');
         throw new Error(`No JSON array found. Response was: "${preview}..."`);
       }
       
-      let jsonString = response.substring(startBracket, endBracket + 1);
+      let jsonString = cleanResponse.substring(startBracket, endBracket + 1);
       
       // Clean up common issues
       jsonString = jsonString.replace(/[\x00-\x1F\x7F]/g, ' ');
