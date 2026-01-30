@@ -242,7 +242,8 @@ export default function Editor() {
   const [showPrepareConfirm, setShowPrepareConfirm] = useState(false);
   const [suggestionLimit, setSuggestionLimit] = useState('8');
   const [expandedSuggestion, setExpandedSuggestion] = useState(null);
-  
+  const [customEdit, setCustomEdit] = useState('');
+
   const editorRef = useRef(null);
   const chatEndRef = useRef(null);
 
@@ -1349,7 +1350,7 @@ ${htmlContent}
                   </span>
                 </div>
               <div 
-                  onClick={() => setExpandedSuggestion(suggestion)}
+                  onClick={() => { setExpandedSuggestion(suggestion); setCustomEdit(''); }}
                   style={{ fontSize: '13px', marginBottom: '8px', cursor: 'pointer' }}
                   title="Click to view full suggestion"
                 >
@@ -1569,14 +1570,14 @@ ${htmlContent}
                 </div>
               </div>
               
-              <div style={{ marginBottom: '24px' }}>
+              <div style={{ marginBottom: '20px' }}>
                 <label style={{ fontSize: '11px', fontWeight: '600', color: '#7a6f5f', fontFamily: '"Inter", system-ui, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                   Reason
                 </label>
-                <div style={{ 
-                  padding: '16px', 
-                  background: 'rgba(250,249,247,0.8)', 
-                  borderRadius: '8px', 
+                <div style={{
+                  padding: '16px',
+                  background: 'rgba(250,249,247,0.8)',
+                  borderRadius: '8px',
                   border: '1px solid rgba(44,36,22,0.1)',
                   fontSize: '14px',
                   lineHeight: '1.6',
@@ -1586,39 +1587,90 @@ ${htmlContent}
                   {expandedSuggestion.reason}
                 </div>
               </div>
-              
+
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ fontSize: '11px', fontWeight: '600', color: '#2563eb', fontFamily: '"Inter", system-ui, sans-serif', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  Custom Edit (optional)
+                </label>
+                <textarea
+                  value={customEdit}
+                  onChange={(e) => setCustomEdit(e.target.value)}
+                  placeholder="Write your own replacement text here..."
+                  style={{
+                    width: '100%',
+                    minHeight: '80px',
+                    padding: '12px 16px',
+                    background: '#fff',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(37,99,235,0.3)',
+                    fontSize: '15px',
+                    lineHeight: '1.7',
+                    color: '#2c2416',
+                    fontFamily: '"Source Serif 4", Georgia, serif',
+                    resize: 'vertical',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
               <div style={{ display: 'flex', gap: '12px' }}>
+                {customEdit.trim() && (
+                  <button
+                    onClick={() => {
+                      const customSuggestion = { ...expandedSuggestion, suggestion: customEdit.trim() };
+                      acceptSuggestion(customSuggestion);
+                      setCustomEdit('');
+                      setExpandedSuggestion(null);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '12px 20px',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontFamily: '"Inter", system-ui, sans-serif',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      color: '#fff',
+                      boxShadow: '0 2px 8px rgba(37,99,235,0.3)'
+                    }}
+                  >
+                    Apply Custom Edit
+                  </button>
+                )}
                 <button
-                  onClick={() => { acceptSuggestion(expandedSuggestion); setExpandedSuggestion(null); }}
-                  style={{ 
-                    flex: 1, 
-                    padding: '12px 20px', 
-                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', 
-                    border: 'none', 
-                    borderRadius: '8px', 
-                    fontSize: '14px', 
-                    fontFamily: '"Inter", system-ui, sans-serif', 
-                    fontWeight: '600', 
-                    cursor: 'pointer', 
+                  onClick={() => { acceptSuggestion(expandedSuggestion); setCustomEdit(''); setExpandedSuggestion(null); }}
+                  style={{
+                    flex: 1,
+                    padding: '12px 20px',
+                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontFamily: '"Inter", system-ui, sans-serif',
+                    fontWeight: '600',
+                    cursor: 'pointer',
                     color: '#fff',
                     boxShadow: '0 2px 8px rgba(5,150,105,0.3)'
                   }}
                 >
-                  Accept Change
+                  Accept Suggestion
                 </button>
                 <button
-                  onClick={() => { dismissSuggestion(expandedSuggestion); setExpandedSuggestion(null); }}
-                  style={{ 
-                    flex: 1, 
-                    padding: '12px 20px', 
-                    background: 'transparent', 
-                    border: '1px solid rgba(44,36,22,0.2)', 
-                    borderRadius: '8px', 
-                    fontSize: '14px', 
-                    fontFamily: '"Inter", system-ui, sans-serif', 
-                    fontWeight: '500', 
-                    cursor: 'pointer', 
-                    color: '#5a5044' 
+                  onClick={() => { setCustomEdit(''); setExpandedSuggestion(null); }}
+                  style={{
+                    flex: 1,
+                    padding: '12px 20px',
+                    background: 'transparent',
+                    border: '1px solid rgba(44,36,22,0.2)',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontFamily: '"Inter", system-ui, sans-serif',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    color: '#5a5044'
                   }}
                 >
                   Dismiss
